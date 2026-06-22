@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dip's Café & Resto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#241a14; --cream:#f7efe2; --rust:#b3502f; --line:#e3d8c5; --paper:#fffdf9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2{font-family:'Fraunces',serif;font-weight:600;}
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 6%;border-bottom:1px solid var(--line);background:var(--paper);
+    position:sticky;top:0;z-index:10;
+  }
+  .logo{font-size:1.3rem;}
+  .logo span{color:var(--rust);}
+  .admin-link{font-size:0.82rem;color:#8a7a6d;text-decoration:none;}
+  .admin-link:hover{color:var(--rust);}
+  .hero{
+    text-align:center;padding:70px 6% 50px;
+  }
+  .hero h1{font-size:clamp(2rem,5vw,3rem);margin-bottom:10px;}
+  .hero p{color:#6b5e51;max-width:480px;margin:0 auto;}
+  section.menu{padding:20px 6% 90px;max-width:1100px;margin:0 auto;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:24px;}
+  .card{
+    background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .card-img{height:180px;background-size:cover;background-position:center;background-color:var(--line);}
+  .card-body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column;gap:4px;}
+  .category{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--rust);}
+  .card-body h3{font-size:1.05rem;}
+  .desc{font-size:0.85rem;color:#7a6a5d;flex:1;}
+  .price{font-weight:600;font-family:'Fraunces',serif;margin-top:8px;}
+  .empty{padding:60px 0;text-align:center;color:#9a8a7d;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Dip's <span>Café</span> & Resto</div>
+  <a class="admin-link" href="admin.html">Owner login →</a>
+</header>
+
+<div class="hero">
+  <h1>First we drip, then we dip.</h1>
+  <p>Parc Sahloul 4, Sousse — fresh menu, updated daily by the team.</p>
+</div>
+
+<section class="menu">
+  <div class="grid" id="menu-grid">
+    <div class="empty">Loading menu…</div>
+  </div>
+</section>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  const supabase = createClient(
+    'https://koctawglvhoqefwnjzhq.supabase.co',
+    'sb_publishable_OSoD0kwVFWxCmaN0H6iDSQ_rW_QLw1d'
+  );
+
+  const grid = document.getElementById('menu-grid');
+
+  async function load() {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      grid.innerHTML = `<div class="empty">Couldn't load the menu.</div>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      grid.innerHTML = `<div class="empty">Menu coming soon!</div>`;
+      return;
+    }
+    grid.innerHTML = data.map(item => `
+      <div class="card">
+        <div class="card-img" style="background-image:url('${item.image_url || ''}')"></div>
+        <div class="card-body">
+          <div class="category">${item.category || ''}</div>
+          <h3>${item.name}</h3>
+          <div class="desc">${item.description || ''}</div>
+          <div class="price">${Number(item.price).toFixed(2)} TND</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  load();
+</script>
+
+</body>
+</html>
