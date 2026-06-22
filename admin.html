@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Dip's Café</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#241a14; --cream:#f7efe2; --rust:#b3502f; --line:#e3d8c5; --paper:#fffdf9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2{font-family:'Fraunces',serif;font-weight:600;}
+
+  /* Login screen */
+  #login-screen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  }
+  .login-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:18px;
+    padding:40px 36px;max-width:360px;width:100%;text-align:center;
+  }
+  .login-card h1{font-size:1.6rem;margin-bottom:8px;}
+  .login-card p{color:#6b5e51;font-size:0.88rem;margin-bottom:24px;}
+  input{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+    font-size:0.92rem;margin-bottom:12px;background:var(--cream);outline:none;
+  }
+  input:focus{border-color:var(--rust);}
+  .btn{
+    width:100%;background:var(--ink);color:var(--paper);border:none;border-radius:10px;
+    padding:12px;font-size:0.92rem;font-weight:500;cursor:pointer;margin-top:4px;
+  }
+  .btn:hover{background:var(--rust);}
+  .btn.secondary{background:none;color:var(--ink);border:1px solid var(--line);margin-top:8px;}
+  .btn.secondary:hover{border-color:var(--rust);color:var(--rust);}
+  #login-msg{font-size:0.82rem;color:var(--rust);min-height:18px;margin-top:8px;}
+
+  /* Dashboard */
+  #dashboard{display:none;}
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 6%;border-bottom:1px solid var(--line);background:var(--paper);
+  }
+  .logo{font-size:1.2rem;}
+  .logo span{color:var(--rust);}
+  .signout{
+    background:none;border:1px solid var(--line);border-radius:24px;padding:7px 16px;
+    font-size:0.82rem;cursor:pointer;color:var(--ink);
+  }
+  .signout:hover{border-color:var(--rust);color:var(--rust);}
+  main{max-width:900px;margin:0 auto;padding:40px 24px 90px;}
+
+  .panel{
+    background:var(--paper);border:1px solid var(--line);border-radius:16px;
+    padding:28px;margin-bottom:32px;
+  }
+  .panel h2{font-size:1.2rem;margin-bottom:18px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  textarea{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+    font-size:0.92rem;margin-bottom:12px;background:var(--cream);outline:none;
+    font-family:inherit;resize:vertical;min-height:60px;
+  }
+  textarea:focus{border-color:var(--rust);}
+  .file-input{
+    border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;
+    margin-bottom:12px;cursor:pointer;font-size:0.85rem;color:#7a6a5d;background:var(--cream);
+  }
+  .file-input:hover{border-color:var(--rust);}
+  .preview{
+    width:100%;height:140px;object-fit:cover;border-radius:10px;margin-bottom:12px;
+    display:none;background:var(--line);
+  }
+  .add-btn{
+    background:var(--rust);color:var(--paper);border:none;border-radius:30px;
+    padding:12px 26px;font-size:0.92rem;font-weight:500;cursor:pointer;
+  }
+  .add-btn:hover{opacity:0.9;}
+  .add-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .item-list{display:flex;flex-direction:column;gap:12px;}
+  .item-row{
+    display:flex;align-items:center;gap:14px;padding:12px;border:1px solid var(--line);
+    border-radius:12px;background:var(--cream);
+  }
+  .item-row img{width:54px;height:54px;border-radius:8px;object-fit:cover;background:var(--line);}
+  .item-row .info{flex:1;}
+  .item-row .info .name{font-weight:500;font-size:0.95rem;}
+  .item-row .info .meta{font-size:0.8rem;color:#7a6a5d;}
+  .del-btn{
+    background:none;border:1px solid var(--line);border-radius:20px;padding:6px 14px;
+    font-size:0.8rem;cursor:pointer;color:var(--rust);
+  }
+  .del-btn:hover{background:var(--rust);color:var(--paper);border-color:var(--rust);}
+  #form-msg{font-size:0.85rem;min-height:18px;margin-top:8px;}
+  #form-msg.error{color:var(--rust);}
+  #form-msg.success{color:#4d6b4f;}
+  .empty-list{color:#9a8a7d;font-size:0.88rem;text-align:center;padding:20px 0;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Café Dashboard</h1>
+    <p>Sign in to manage your menu.</p>
+    <input type="email" id="login-email" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button class="btn" id="login-btn">Sign in</button>
+    <button class="btn secondary" id="signup-btn">First time? Create admin account</button>
+    <div id="login-msg"></div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="logo">Dip's <span>Café</span> — Dashboard</div>
+    <button class="signout" id="signout-btn">Sign out</button>
+  </header>
+  <main>
+    <div class="panel">
+      <h2>Add a new item</h2>
+      <input type="text" id="item-name" placeholder="Item name (e.g. Crêpe Nutella)">
+      <div class="form-row">
+        <input type="number" id="item-price" placeholder="Price (TND)" step="0.01">
+        <input type="text" id="item-category" placeholder="Category (e.g. Drinks)">
+      </div>
+      <textarea id="item-desc" placeholder="Short description (optional)"></textarea>
+      <label class="file-input" for="item-photo">📷 Click to choose a photo</label>
+      <input type="file" id="item-photo" accept="image/*" style="display:none;">
+      <img id="preview" class="preview">
+      <button class="add-btn" id="add-btn">Add to menu</button>
+      <div id="form-msg"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Current menu</h2>
+      <div class="item-list" id="item-list">
+        <div class="empty-list">Loading…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  const supabase = createClient(
+    'https://koctawglvhoqefwnjzhq.supabase.co',
+    'sb_publishable_OSoD0kwVFWxCmaN0H6iDSQ_rW_QLw1d'
+  );
+
+  const loginScreen = document.getElementById('login-screen');
+  const dashboard = document.getElementById('dashboard');
+  const loginMsg = document.getElementById('login-msg');
+
+  // ---- Auth ----
+  async function checkSession() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      loginScreen.style.display = 'none';
+      dashboard.style.display = 'block';
+      loadItems();
+    } else {
+      loginScreen.style.display = 'flex';
+      dashboard.style.display = 'none';
+    }
+  }
+
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    loginMsg.textContent = '';
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { loginMsg.textContent = error.message; return; }
+    checkSession();
+  });
+
+  document.getElementById('signup-btn').addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) {
+      loginMsg.textContent = 'Enter an email and password first.';
+      return;
+    }
+    loginMsg.textContent = '';
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) { loginMsg.textContent = error.message; return; }
+    loginMsg.style.color = '#4d6b4f';
+    loginMsg.textContent = 'Account created! Signing you in…';
+    setTimeout(() => checkSession(), 1000);
+  });
+
+  document.getElementById('signout-btn').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    checkSession();
+  });
+
+  // ---- Photo preview ----
+  const photoInput = document.getElementById('item-photo');
+  const preview = document.getElementById('preview');
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (!file) return;
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+  });
+
+  // ---- Add item ----
+  const formMsg = document.getElementById('form-msg');
+  const addBtn = document.getElementById('add-btn');
+
+  addBtn.addEventListener('click', async () => {
+    const name = document.getElementById('item-name').value.trim();
+    const price = document.getElementById('item-price').value;
+    const category = document.getElementById('item-category').value.trim() || 'Other';
+    const description = document.getElementById('item-desc').value.trim();
+    const file = photoInput.files[0];
+
+    formMsg.className = '';
+    formMsg.textContent = '';
+
+    if (!name || !price) {
+      formMsg.className = 'error';
+      formMsg.textContent = 'Name and price are required.';
+      return;
+    }
+
+    addBtn.disabled = true;
+    addBtn.textContent = 'Adding...';
+
+    let image_url = null;
+
+    if (file) {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('menu-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        formMsg.className = 'error';
+        formMsg.textContent = 'Photo upload failed: ' + uploadError.message;
+        addBtn.disabled = false;
+        addBtn.textContent = 'Add to menu';
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('menu-images').getPublicUrl(filePath);
+      image_url = urlData.publicUrl;
+    }
+
+    const { error } = await supabase.from('menu_items').insert({
+      name, price, category, description, image_url
+    });
+
+    addBtn.disabled = false;
+    addBtn.textContent = 'Add to menu';
+
+    if (error) {
+      formMsg.className = 'error';
+      formMsg.textContent = 'Could not save item: ' + error.message;
+      return;
+    }
+
+    formMsg.className = 'success';
+    formMsg.textContent = 'Item added!';
+    document.getElementById('item-name').value = '';
+    document.getElementById('item-price').value = '';
+    document.getElementById('item-category').value = '';
+    document.getElementById('item-desc').value = '';
+    photoInput.value = '';
+    preview.style.display = 'none';
+    loadItems();
+  });
+
+  // ---- List + delete items ----
+  const itemList = document.getElementById('item-list');
+
+  async function loadItems() {
+    const { data, error } = await supabase
+      .from('menu_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      itemList.innerHTML = `<div class="empty-list">Couldn't load menu.</div>`;
+      return;
+    }
+    if (!data || data.length === 0) {
+      itemList.innerHTML = `<div class="empty-list">No items yet — add your first one above.</div>`;
+      return;
+    }
+    itemList.innerHTML = data.map(item => `
+      <div class="item-row">
+        <img src="${item.image_url || ''}">
+        <div class="info">
+          <div class="name">${item.name}</div>
+          <div class="meta">${item.category || ''} — ${Number(item.price).toFixed(2)} TND</div>
+        </div>
+        <button class="del-btn" data-id="${item.id}">Delete</button>
+      </div>
+    `).join('');
+
+    itemList.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        await supabase.from('menu_items').delete().eq('id', id);
+        loadItems();
+      });
+    });
+  }
+
+  checkSession();
+</script>
+
+</body>
+</html>
